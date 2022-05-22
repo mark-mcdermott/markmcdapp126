@@ -1,24 +1,38 @@
-require_relative "boot"
+class ApplicationController < ActionController::Base
 
-require "rails/all"
+  add_flash_types :success, :error, :warning, :info
 
-# Require the gems listed in Gemfile, including any gems
-# you've limited to :test, :development, or :production.
-Bundler.require(*Rails.groups)
+  before_action :authorized
+  helper_method :current_user 
+  helper_method :logged_in?
+  helper_method :bootstrap_class_for
 
-module Markmcdapp126
-  class Application < Rails::Application
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 7.0
-
-    config.serve_static_assets = true
-
-    # Configuration for the application, engines, and railties goes here.
-    #
-    # These settings can be overridden in specific environments using the files
-    # in config/environments, which are processed later.
-    #
-    # config.time_zone = "Central Time (US & Canada)"
-    # config.eager_load_paths << Rails.root.join("extras")
+  def authorized
+    puts 'checking authorization status: ' + logged_in?.to_s
+    redirect_to '/' unless logged_in?
   end
+
+  def current_user
+    @user = User.find_by_id(session[:user_id])
+  end
+
+  def logged_in?
+    !!current_user
+  end
+  
+  def bootstrap_class_for flash_type
+    case flash_type
+      when "success"
+        "alert-success"
+      when "error"
+        "alert-danger"
+      when "warning"
+        "alert-warning"
+      when "info"
+        "alert-info"
+      else
+        flash_type.to_s
+    end
+  end
+
 end
